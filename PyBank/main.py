@@ -1,72 +1,96 @@
-#import os and write csv path
-from statistics import mean
+"""THIS IS MY FIRST PYTHON HOMEWORK CHALLENGE"""
+
+#import OS and CSV libraries
 import os
-csvpath = os.path.join("raw_data", "budget_data_1.csv") 
-
-#Improved Reading using CSV module
 import csv
-with open(csvpath, newline='') as csvfile:
 
-    # CSV reader delimiter and varaiable
-    csvreader = csv.reader(csvfile, delimiter=',')
-    next(csvreader,None)
-    csvlist = list(csvreader)
+#create variables for calculations
+month_counter = 0
+sum_revenue = 0
+sum_revenue_change = 0
 
-    #list creation, places to store csv "rows" (They are columns!)
-    dates = []
-    revenues = []
+#repeat code once for each data file
+for file_count in range(1):
+    file_name = "budget_data_" + str(file_count+1) + ".csv"
 
-    #run for loop for every row
-    for dog in csvlist:
-        dates.append(dog[0])
-        revenues.append(int(dog[1]))
-    
-    #create a list for revenue change
-    revchange = []
+    #create path
+    file_path = os.path.join('raw_data',file_name)
 
-    #run loop through revenues list to find the change revenues from month
-    revchange = [revenues[i+1] - revenues[i] for i in range(len(revenues) -1)]
-    
-    #variables
-    max_change = max(revchange)
-    big_loss = min(revchange)
-    avg_change = mean(revchange)
-    total_month = len(dates)
-    max_month = None
-    loss_month = None
+    #open file and create file handle
+    with open(file_path,newline='') as csv_file:
+        csv_reader = csv.reader(csv_file)
 
-    # external rev value, maybe none to start
-    #for row in csvlist:
-        # if none
-            # set external revenue val
-            # skip rest of loop, go to next iteration
-        # if diff == big loss
-            # do stuff
-        # store current rev val in external rev val
-    
-    #for loop to find corresponding date 
-    initial_val = None
-    for row in csvlist:
-        if initial_val is None:
-            initial_val = int(row[1])
-            continue
-        if int(row[1]) - initial_val == big_loss:
-            loss_month = row[0]
-        initial_val = int(row[1])
+        #skip header row
+        line = next(csv_reader,None)
 
-    initial_val2 = None
-    for row in csvlist:
-        if initial_val2 is None:
-            initial_val2 = int(row[1])
-            continue
-        if abs(int(row[1]) - initial_val2) == max_change:
-            max_month = row[0]
-        initial_val2 = int(row[1])
-    
+        #grab data from first line
+        line = next(csv_reader,None)
+        max_month = line[0]
+        min_month = line[0]
+        revenue = float(line[1])
+        min_revenue = revenue
+        max_revenue = revenue
+        previous_revenue = revenue
+        month_counter = 1
+        sum_revenue = float(line[1])
+        sum_revenue_change = 0
 
-    print("Financial Analysis")
-    print("-----------------------------------------------------------------------------")
-    print(f"The financial analysis occured over {total_month} months")
-    print(f"The average revenue change was ${avg_change}")
-    print(f"Greatest Increase in Profits:  {max_month} (${max_change})")
-    print(f"Greatest Decrease in Profit:   {loss_month}  (${big_loss})")
+        #read one line at a time
+        for line in csv_reader:
+
+            #increase counter for number of months in dataset
+            month_counter = month_counter + 1
+
+            revenue = float(line[1])
+
+            #add to sum of revenue for data set
+            sum_revenue = sum_revenue + revenue
+
+            #find change in revenue between this month and last month
+            revenue_change = revenue - previous_revenue
+
+            #add change in revenue to net change in revenue for data set
+            sum_revenue_change = sum_revenue_change + revenue_change
+
+            #determine if change in revenue is a max or min for data set thus far
+            if revenue_change > max_revenue:
+                max_month = line[0]
+                max_revenue = revenue_change
+
+            if revenue_change < min_revenue:
+                min_month = line[0]
+                min_revenue = revenue_change
+
+            #set previous revenue to revenue
+            previous_revenue = revenue
+
+        #finish calculations
+        average_revenue = sum_revenue/month_counter
+        average_revenue_change = sum_revenue_change/(month_counter-1)
+        
+        #print analysis to terminal
+        print(f"Financial Analysis for {file_name}:")
+        print("-------------------------------------------------------")
+        print(f"Total Months: {month_counter}")
+        print(f"Total : {sum_revenue}")
+        print(f"Average Change: {average_revenue_change}"[:24])
+        print(f"Greatest Increase in Profit: {max_month} {max_revenue}")
+        print(f"Greatest Decrease in Profit: {min_month} {min_revenue}")
+        print("")
+        
+        write_file = f"pybank_results_summary_{file_count}.txt"
+
+        #open write file
+        filewriter = open("Output/analysis.txt", "w")
+
+        #print analysis to file
+        filewriter.write(f"Financial Analysis for the Budget Revenue\n")
+        filewriter.write("-------------------------------------------------------\n")
+        filewriter.write(f"Total Months: {month_counter}\n")
+        filewriter.write(f"Total : {sum_revenue}\n")
+        filewriter.write(f"Average  Change: {average_revenue_change}"[:25])
+        filewriter.write(f"\nGreatest Increase in Profit: {max_month} {max_revenue}\n")
+        filewriter.write(f"Greatest Decrease in Profit: {min_month} {min_revenue}\n")
+        filewriter.write("")
+
+        filewriter.close()
