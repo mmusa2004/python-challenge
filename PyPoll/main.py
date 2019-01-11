@@ -1,23 +1,23 @@
 import os
 import csv
 
-#choose 1 or 2
+#choose file number1 
 file_num = 1
 
-# Identifies file with poll data
+#identify file with poll data
 file = os.path.join('raw_data', 'election_data_' + str(file_num) + '.csv')
 
-#Creates dictionary to be used for candidate name and vote count.
+#creates dictionary to be used for candidate name and vote count.
 poll = {}
 
-#Sets variable, total votes, to zero for count.
+#set variable, total votes, to zero for count.
 total_votes = 0
 
-#gets data file
+#get CSV data file
 with open(file, 'r') as csvfile:
     csvread = csv.reader(csvfile)
 
-    #skips header line
+    #skipsheader line
     next(csvread, None)
 
     #creates dictionary from file using column 3 as keys, using each name only once.
@@ -34,36 +34,36 @@ with open(file, 'r') as csvfile:
 candidates = []
 num_votes = []
 
-#takes dictionary keys and values and, respectively, dumps them into the lists, 
+#take dictionary keys and values and, respectively, dumps them into the lists, 
 # candidates and num_votes
 for key, value in poll.items():
     candidates.append(key)
     num_votes.append(value)
 
-# creates vote percent list
+# create vote percent list
 vote_percent = []
 for n in num_votes:
     vote_percent.append(round(n/total_votes*100, 1))
 
-# zips candidates, num_votes, vote_percent into tuples
+# zip candidates, num_votes, vote_percent into tuples
 clean_data = list(zip(candidates, num_votes, vote_percent))
 
-#creates winner_list to put winners (even if there is a tie)
+#create winner_list to put winners (even if there is a tie)
 winner_list = []
 
 for name in clean_data:
     if max(num_votes) == name[1]:
         winner_list.append(name[0])
 
-# makes winner_list a str with the first entry
+# make winner_list a str with the first entry
 winner = winner_list[0]
 
-#only runs if there is a tie and puts additional winners into a string separated by commas
+#run only if there is a tie and puts additional winners into a string separated by commas
 if len(winner_list) > 1:
     for w in range(1, len(winner_list)):
         winner = winner + ", " + winner_list[w]
 
-#prints to file
+#print to an output  folder/file
 output_file = os.path.join('Output', 'election_results_' + str(file_num) +'.txt')
 
 with open(output_file, 'w') as txtfile:
